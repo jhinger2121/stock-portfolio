@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<section>
+  <div class="portfolio-header detail-spacing">
+    <div id="amountHolding" class="amount-hold">
+      <h3>
+        <span id="portfolioName">{{ portfolio.name }}</span>
+        <span>({{ portfolio.get_account_type_display }})</span>
+      </h3>
+      <h4 id="portfolioID" class="hide">{{ portfolio.id }}</h4>
+
+      <h1>{{ portfolio.analysis }} <small>CAD</small></h1>
+      <p>{{ portfolio.all_items_capital.dol }} 
+        ({{ portfolio.all_items_capital.pct }}%) all time</p> <br>
+    </div>
+    
+    <div class="dividend-info">
+      <h3>ANNUAL EXPECTED DIVIDEND</h3>
+      {% if portfolio.annual_dividend.msg %}
+        <small><p>{{ portfolio.annual_dividend.msg }}</p></small>
+      {% endif %}
+      <h3>C{{ portfolio.annual_dividend.yearly }}</h3>
+      <div class="b-div">
+        <p>Monthly</p>
+        <p>C{{ portfolio.annual_dividend.monthly }}</p>
+      </div>
+      <div class="b-div">
+        <p>Week</p>
+        <p>C{{ portfolio.annual_dividend.weekly }}</p>
+      </div>
+      <div class="b-div">
+        <p>Yield</p>
+        <p>{{ portfolio.annual_dividend.yield }}%</p>
+      </div>
+
+    </div>
+  </div>
+    
+  <div class="graph-section detail-spacing">
+
+    <div class="DRIPs-graph graph">
+      <h3>Last year dividend received.</h3>
+      <div class="drip-msg msg">
+      </div>
+      <canvas id="dividend-chart"></canvas>
+    </div>
+
+    <div class="dividend-graph graph">
+      <h3>MONTHLY EXPECTED DIVIDEND</h3>
+      <div class="dividend-msg msg">
+      </div>
+      <canvas id="bar-chart"></canvas>
+    </div>
+
+    <div class="DRIPs-graph graph">
+      <h3>PORTFOLIO DRIPs</h3>
+      <div class="drip-msg msg">
+      </div>
+      <canvas id="line-chart"></canvas>
+    </div>
+
+    <div class="data-right">
+      <div class="head">
+          <h3>Recent Transactions</h3>
+          <a href="{% url 'transactins' portfolio.id %}">More Transcations</a>
+      </div>
+      <div class="table">
+          <table>
+              <div class="rap">
+                  
+              </div>
+              {% for tran in portfolio.transaction_set.latest_15 %}
+              <tr>
+                <td>
+                  <p>Stock: <span class="bold">{{ tran.stock.symbol }}</span></p><br>
+                  <p>Quantity: <span class="bold">{{ tran.quantity }}</span></p><br>
+                  <p>Price: <span class="bold">${{ tran.price }}</span></p>
+                </td>
+                <td>
+                  <p>Total Price: <span class="bold">${{ tran.total_price }}</span></p><br>
+                  <p>Date: <span class="bold">{{ tran.transaction_date }}</span></p><br>
+                  <p>Transaction Type: <span class="bold">{{ tran.get_transaction_type_display }}</span></p>
+                </td>
+              </tr>
+              {% endfor %}
+            </table>
+        </div>
+    </div>
+
+  </div>
+
+
+  <!-- <section class="DRIPs-table">
+    <div class="table">
+      <table>
+          <div class="rap">
+              
+          </div>
+          <tr>
+              <th><p>Stock</p></th>
+              <th><p>Holding</p></th>
+              <th><p>Distribution</p> </th>
+              <th><p>Changes for DRIPs</p> </th>
+          </tr>
+          {% for item in portfolio.portfolioitem_set.all %}
+          
+          {{ item.DRIP_table }}
+          <tr>
+            <td class="t-stock">
+              <h3>{{ item.stock.symbol }}</h3>
+              <p>{{ item.stock.name }}</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="t-stock">
+              <h3>{{ item.stock.symbol }}</h3>
+              <a href="">click</a>
+              <a href="">DRFT</a>
+              <p>{{ item.stock.name }}</p>
+            </td>
+            <td class="t-own-stock">
+              <h3>${{ item.curr_price }}</h3>
+              <p>CAD</p>
+            </td>
+            <td class="t-cur-stock">
+              <h3>${{ item.total_amount }}</h3>
+              <p>{{ item.qty }} shares</p>
+            </td>
+            <td class="t-cur-stock">
+              <h3><i>|</i> ${{ item.calculate_profit.dol }}</h3>
+              <p>{{ item.calculate_profit.pct }}%</p>
+            </td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td>Lois</td>
+            <td>Griffin</td>
+            <td>$150</td>
+            <td>$150</td>
+          </tr>
+          <tr>
+            <td>Joe</td>
+            <td>Swanson</td>
+            <td>$300</td>
+            <td>$300</td>
+          </tr>
+          <tr>
+            <td>Cleveland</td>
+            <td>Brown</td>
+            <td>$250</td>
+            <td>$250</td>
+          </tr>
+        </table>
+    </div>
+  </section>
+   -->
+  
+   <section class="data detail-spacing">
+      <div class="data-left">
+          <div class="head">
+              <h3>Your portfolio items</h3>
+          </div>
+          
+          <div class="table">
+              <table>
+                  <tr>
+                      <th></th>
+                      <th><p>Today's price</p></th>
+                      <th><p>Total value</p> </th>
+                      <th><p>All time return</p> </th>
+                  </tr>
+                  {% for item in portfolio.portfolioitem_set.all %}
+                  <tr>
+                    <td class="t-stock">
+                      <h4>{{ item.stock.symbol }}</h4>
+                      <p>{{ item.stock.name }}</p>
+                    </td>
+                    <td class="t-own-stock">
+                      <h4>${{ item.curr_price }}</h4>
+                      <p>{{ item.stock.get_currency_display }}</p>
+                    </td>
+                    <td class="t-cur-stock">
+                      <h4>{{ item.total_amount.show }}</h4>
+                      <p>{{ item.qty }} shares</p><br>
+                      <p>{{ item.purchase_price }} price</p>
+                    </td>
+                    <td class="t-cur-stock">
+                      <h4><i>|</i> ${{ item.calculate_profit.dol }}</h4>
+                      <p>{{ item.calculate_profit.pct }}%</p>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </table>
+          </div>
+          
+      </div>
+      
+  </section>
+</section>
+
+<script>
+  const portfolioName = document.querySelector("#portfolioName").textContent
+  const portfolioID = document.querySelector("#portfolioID").textContent
+
+  // 'portfolio-<str:portfolio_slug>/id=<int:portfolio_id>/DRIP-year-<int:year_count>/',
+  // 'portfolio-<str:portfolio_slug>/id=<int:portfolio_id>/dividend-by-months/',
+
+  const url = "/portfolio-" + portfolioName + "/id=" + portfolioID + "/DRIP-year-2/"
+  const url_2 = "/portfolio-" + portfolioName + "/id=" + portfolioID + "/dividend-by-months/"
+  const url_3 = "/portfolio-id=" + portfolioID + '/total-dividend/year-1/'
+  
+  const drip_msg = document.querySelector(".drip-msg")
+  const divdend_msg = document.querySelector(".dividend-msg")
+  const amountHolding = document.getElementById("amountHolding")
+
+  function generateRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+
+  function labelsData(results) {
+    let months = results.months
+    let dividend = results.dividend
+    let data = []
+    for (var i = 0; i < dividend.length; i++) {
+      let profit = parseInt(dividend[i])
+      value = months[i] + " $" + profit.toFixed(2)
+        data.push(value)
+    }
+    return data
+  }
+
+  function DRIP_LineChart(results){
+    new Chart(document.getElementById("line-chart"), {
+      type : 'line',
+      data : {
+        labels : results.labels,
+        datasets : [
+          {
+            data : results.data,
+            label : "Portfolio DRIPs by given period of 2 years",
+            // borderColor : "#6f6e78",
+            fill : false,
+            tension: 0.1
+          }
+        ]
+      },
+      options : {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Chart.js Line Chart - Cubic interpolation mode'
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+        title : {
+          display : true,
+          text : 'Chart JS Line Chart Example'
+        }
+      }
+    });
+  }
+
+  function montylyDividendChart(results){
+    new Chart(document.getElementById("bar-chart"), {
+      type: 'doughnut',
+      data: {
+          labels: labelsData(results),
+          datasets: [{
+              label: 'Dividend',
+              data: results.dividend,
+              // backgroundColor: generateRandomColor(),
+              // borderColor: 'rgba(0, 0, 0, 1)',
+              borderWidth: 2
+          }]
+      },
+      options: {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Chart.js Line Chart - Cubic interpolation mode'
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+        interaction: {
+            intersect: false,
+            mode: 'index'
+        },
+        animation: {
+            duration: 1000
+        },
+        hover: {
+            mode: 'nearest',
+            intersect: true
+        }
+      }
+    });
+  }
+
+  function dividend_information(results){
+    new Chart(document.getElementById("dividend-chart"), {
+      type : 'line',
+      data : {
+        labels : results.dividend.months,
+        datasets : [
+          {
+            data : results.dividend.values,
+            label : "Dividend",
+            // borderColor : "#6f6e78",
+            fill : false,
+            tension: 0.5
+          }
+        ]
+      },
+      options : {
+        plugins: {
+          title: {
+            display: true,
+            text: 'Dividend received each month - by given period'
+          },
+        },
+        maintainAspectRatio: false,
+        responsive: true,
+        title : {
+          display : true,
+          text : 'Chart JS Line Chart Example'
+        }
+      }
+    });
+  }
+
+  async function fetchLineChart(url) {
+    try {
+      const response = await fetch(url, {
+        method: "GET", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      console.log("Success line chart:", result);
+      DRIP_LineChart(result)
+      let messages = showMessage(result.message)
+      if (messages) {
+        drip_msg.innerHTML = "<p>Missing some data for " + "'" + messages + "'" + "</p>"
+      }
+      return result
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  async function fetchDoughnutChart(url) {
+    try {
+      const response = await fetch(url, {
+        method: "GET", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      console.log("Success with doughnut chart:", result);
+      montylyDividendChart(result)
+      let messages = showMessage(result.message)
+      if (messages) {
+        divdend_msg.innerHTML = "<p>Stocks " + "'" + messages + "'" + " missing some data.</p>"
+      }
+      return result
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  function displayTotalDividend(value) {
+    var paragraph = document.createElement("p");
+    paragraph.textContent = "$" + value.total_divided_received + " received as dividend so far.";
+    if (value) {
+      amountHolding.append(paragraph)
+    }
+  }
+
+  async function fetchDividendChartInfo(url) {
+    try {
+      const response = await fetch(url, {
+        method: "GET", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      console.log("Success with dividend chart info:", result);
+      dividend_information(result)
+      displayTotalDividend(result)
+      return result
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+
+  function showMessage(message) {
+    let msg = ""
+    if (message) {
+      for (let i = 0; i < message.length; i++) {
+        msg += message[i] + ", "
+      }
+      return msg
+    } else {
+      return null
+    }
+  }
+
+  fetchLineChart(url)
+  fetchDoughnutChart(url_2)
+  fetchDividendChartInfo(url_3)
+  
+</script>
+
+
+{% endblock body%}

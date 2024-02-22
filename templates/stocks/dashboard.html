@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+{% block header %}
+    <p></p>
+{% endblock header %}
+{% block body %}
+<div class="main-top">
+    <h1>$44,479.11</h1>
+    <p>
+        <span>-$20.89</span>
+        <span>(-0.05) all time</span>
+    </p>
+</div>
+<div class="container-center">
+
+    <div class="main">
+        {% for portfolio in portfolios %}
+        <div class="portfolio" id="{{ portfolio.id }}">
+            <div class="top">
+                <div class="left">
+                    <h4><a href="{% url 'portfolio_detail' portfolio.slug portfolio.id %}">{{ portfolio.name }}</a></h4>
+                    <h3>{{ portfolio.get_account_type_display }}</h3>
+                </div>
+                <div class="right">
+                    <h4>{{ portfolio.portfolioitem_set.count }} positions</h4>
+                </div>
+            </div>
+            <div class="bottom">
+                <div class="left">
+                    <h4>Balance</h4>
+                    <h3></h3>
+                </div>
+                <div class="right">
+                    <h4>Performance</h4>
+                    <!-- <h3>{{ portfolio.analysis }} | 2.33%</h3> -->
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <div class="data-right">
+        <div class="head">
+            <h3>Recent Transactions</h3>
+            <a href="{% url 'transactins' %}">More Transcations</a>
+        </div>
+        <div class="table">
+            <table>
+                {% for tran in transactions|slice:":20" %}
+                <tr>
+                  <td>
+                    <p>Stock: <span class="bold">{{ tran.stock.symbol }}</span></p><br>
+                    <p>Quantity: <span class="bold">{{ tran.quantity }}</span></p><br>
+                    <p>Price: <span class="bold">${{ tran.price }}</span></p>
+                  </td>
+                  <td>
+                    <p>Total Price: <span class="bold">${{ tran.total_price }}</span></p><br>
+                    <p>Date: <span class="bold">{{ tran.transaction_date }}</span></p><br>
+                    <p>Transaction Type: <span class="bold">{{ tran.get_transaction_type_display }}</span></p><br>
+                  </td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+
+
+    <!-- <div class="right">
+        <div class="table">
+            <table>
+                <tr>
+                    <th class="h">Holdings</th>
+                    <th class="v">Total values</th>
+                </tr>
+                <tr>
+                    <td class="t-stock">
+                        <h4>AP.UN</h4>
+                        <p>1185.8919 shares</p>
+                    </td>
+                    <td class="t-cur-stock">
+                        <h4>$22.89 CAD</h4>
+                        <p>-0.05(0.22%)</p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div> -->
+</div>
+<section class="dashboard-mid">
+    <div class="stocks"></div>
+    <div class="graph">
+        <h3>Dividend information.</h3>
+        <canvas id="dashboard-dividend-info-chart"></canvas>
+    </div>
+</section>
+
+<script>
+    const url = "total-dividend/year-1/"
+    function updateHoldings(results) {
+        for (x in results) {
+            let portfolioID = document.getElementById(x);
+            if (portfolioID) {
+                portfolioID.querySelector(".bottom .left h3").innerHTML = results[x].holding;
+            }
+        }
+        document.querySelector(".main-top h1").innerHTML = results.holding
+    }
+    function dividendChart(results){
+        new Chart(document.getElementById("dashboard-dividend-info-chart"), {
+            type : 'line',
+            data : {
+                labels : results.dividend.months,
+                datasets : [
+                {
+                    data : results.dividend.values,
+                    label : "Dividend",
+                    // borderColor : "#6f6e78",
+                    fill : false,
+                    tension: 0.5
+                }
+                ]
+            },
+            options : {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Dividend received each month - by given period'
+                    },
+                },
+                maintainAspectRatio: false,
+                responsive: true,
+                title : {
+                    display : true,
+                    text : 'Chart JS Line Chart Example'
+                    }
+            }
+        });
+    }
+
+    async function fetchGraph(url) {
+        try {
+            const response = await fetch(url, {
+                method: "GET", // or 'PUT'
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+            const results = await response.json();
+            console.log("Success line chart:", results);
+            updateHoldings(results.data)
+            dividendChart(results)
+            return results
+        } catch (error) {
+            console.error("Error:", error);
+        }
+    }
+
+    fetchGraph(url)
+</script>
+{% endblock body %}

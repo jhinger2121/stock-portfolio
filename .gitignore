@@ -1,0 +1,5 @@
+.env
+credentials.json
+db.sqlite3
+yfinance.cache
+token.pickle

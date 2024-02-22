@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block body %}
+<section>
+    <div class="amount-hold">
+        <h4>{{ account.name }}</h4>
+        <h4>({{ account.user }})</h4>
+        <h1>${{ account.total_amount_hold }} <small>CAD</small></h1>
+    </div>
+
+    <section class="data">
+        <div class="data-left">
+            <!-- <div class="head">
+                <h3>Trade</h3>
+                <a href="#">Add an account -></a>
+            </div> -->
+            {% if portfolios %}
+            {% for portfolio in portfolios  %}
+                <div class="card">
+                    <div class="top">
+                        <h1>{{ portfolio.name }}</h1>
+                        <p>{{ portfolio.analysis.count }} positions</p>
+                        <a href="{% url 'portfolio_detail' portfolio.account.id portfolio.slug portfolio.id %}">click</a>
+                        
+                    </div>
+
+                    <div class="bottom">
+                        <div class="left">
+                            <h5>Balance</h5>
+                            <span>${{ portfolio.analysis.total_amount }}</span>
+                        </div>
+                        <div class="right">
+                            <h5>Performance</h5>
+                            <i>~</i>
+                            <span>${{ portfolio.analysis.gain_n_loss }}</span>
+                            <span>{{ portfolio.analysis.percentage }}%</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% else %}
+                <strong>There are no portfolios under this account</strong>
+                <p>please add portfolio to view data</p>
+            {% endif %}
+            
+
+            <div class="card">
+                <div class="top">
+                    <h1>TFSA</h1>
+                    <p>18 positions</p>
+                </div>
+
+                <div class="bottom">
+                    <div class="left">
+                        <h5>Balance</h5>
+                        <span>$18530.79</span>
+                    </div>
+                    <div class="right">
+                        <h5>Performance</h5>
+                        <i>~</i>
+                        <span>$30.79</span>
+                        <span>0.17%</span>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <div class="data-right">
+            <div class="head">
+                <h3>Watch List</h3>
+                <a href="#">Manage</a>
+            </div>
+            <div class="table">
+                <table>
+                    <div class="rap">
+                        
+                    </div>
+                    <tr>
+                      <td class="t-stock">
+                        <h3>AP.UN</h3>
+                        <p>Allied pro...</p>
+                      </td>
+                      <td class="t-own-stock">
+                        <h3><i>|</i> $22.89</h3>
+                        <p>-0.05(0.22%) CAD</p>
+                      </td>
+                      <td class="t-cur-stock">
+                        <h3><i>|</i> $22.89</h3>
+                        <p>-0.05(0.22%) CAD</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lois</td>
+                      <td>Griffin</td>
+                      <td>$150</td>
+                    </tr>
+                    <tr>
+                      <td>Joe</td>
+                      <td>Swanson</td>
+                      <td>$300</td>
+                    </tr>
+                    <tr>
+                      <td>Cleveland</td>
+                      <td>Brown</td>
+                      <td>$250</td>
+                    </tr>
+                  </table>
+            </div>
+        </div>
+    </section>
+</section>
+
+<style>
+
+</style>
+{% endblock body %}
+

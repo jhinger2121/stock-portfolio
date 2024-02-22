@@ -1,0 +1,168 @@
+STOCK PORTFOILIO PROJECT
+
+Q) what i need to scrape of stocks?
+
+1, stock price (done) for "Stock" models
+2, how much single stock pay as dividend (to calculate stock yield)
+3, ex-dividend date of stock, later (workon paydate, ...)
+4, thinking.....
+5, get latest NEWS of stocks (do it at last)
+
+Q) what should I show on each page?
+page 1) HOMEPAGE
+		show line chart(show total amount of holding, show "all time capitalgain"
+		information i need for the cart -- ..think..
+
+		show account -- with total holding and percentages of gain
+		show all portfolio also
+
+		create watchlist --scrape price and compair to last week price or last day
+		if it drop 2-5% show alert, or if it drop from avarage price you bought 
+		stock example TD price 78.80 if it drop low than this show alert
+
+page 2) ACCOUNT 
+		show portfolio models
+
+		again show gains like captial gains, all time high
+
+		portfolio future (claculate DRFT and reinvest -- which will increase acount
+			of stocks, then calculate past 5 year capital gain then guess the 
+			stock price after some time
+
+		do the above calculate for each individual stock too
+
+
+section -- Watcher
+	models:
+		Stocks
+
+	
+	track: 
+		1) set reminder when price drop the value from your
+		   average stock price or last buy price.
+		2) track price of each stock (every after 10 mints).
+		3) show how much price is low compair to last day
+		4) send notification when price drop from avarage bought price
+		   or when price drop a month low, a week low, a year low, 5 year low
+		5) ADVANSE-FEATURE: notify me when company value, earning droping (
+			auto mate this with AI to read articles, 
+		)
+		
+
+models -- analysis
+	track: 
+		2) track distribution of stocks and send notification 
+		   when stock cut distrubutiond
+		
+		
+		
+
+		
+
+....
+
+
+STOCK PAGE
+	field
+		which portfolio i'm holding this account
+		quantity
+		purchase_price
+		current_price
+		purchase_date
+
+
+HOMEPAGE 
+
+	kuldeep wealthsimple account
+		TFSA portfolio
+		RRSP portfolio
+	kuldeep questgrade acoount
+		TFSA portfolio
+	GF wealthsimple account
+		TFSA portfolio
+		RRSA portfolio
+
+account page
+	account related portfolio
+
+portfolio page
+	holding of stocks
+stock page
+	.values
+	
+
+
+** IMPORTANTE
+	cache the results, when data changed kill cache
+	and create only one function for each models, dont stack up
+
+
+
+**  Current tasks
+	show today's gain of stock	
+		how to -- need previous day price to show current day gain or loss
+				  change models of current_price
+				  everyday, model should create one instacne and keep changing price
+				  through out the day, on the next create another models instacne
+				  then compair price to caluclate the gain or loss
+
+	create alert models
+		fields
+		function
+		display data on stock
+		celery
+
+	MAIN TASK -- create an alert that will send notification when price goes low 
+				 from bought price of stock
+				 jado price pana current price set kara ge fields da apna ode check
+				 karga ge v price ghat gya avarage price toh. use cacheing to show data
+				 when price goes up show alert that price went up then kill chache for
+				 price_went_down alert.
+
+				 compair price to last day's price to show amount/percentages up and down.
+
+				 DRFT count
+
+				 portfolio annual yield calculate
+
+				 ** important start scraping data from gmail.com and save it to database
+
+				 i'm stock at this PROJECT
+				 work on portfolio first -- look at portfolio see what you can add to it
+				 	DRIP -- work on it
+				 then on single stock -- same here see what yyou can add to it
+
+
+				 currently working on showing charts in django PROJECT, displaying data
+				 on portfolio page.
+
+				 get data for line chat to display
+
+				 **important -- show a graph that will show number of stocks we can buy
+				 				from our monthly/quaterly dividend.
+								Or show a table\
+							
+						ROws
+						ticker      holding       current DRIP   		changes to DRIP     
+						CALL        stock		dividend month/quater	stock buy
+									amount		stock can buy			amount to bought
+
+				** calculate the DRIPs for single stock -- on portfolio page
+																		
+
+ISSUES
+	if the portoflio items hit 0 in quantity then delete the whole portfolio item
+
+
+
+28,10,2023 update
+what i can show on HOMEPAGE
+Transactions:
+	A summary of recent buy/sell transactions within the portfolio.
+	Transaction date, type (e.g., Buy, Sell, Dividend Reinvestment), stock symbol, and quantity.
+	Total transaction value.
+Dividend Information:
+	Information related to dividend income:
+	Upcoming and previous dividend payout dates.
+	Dividend income earned from each stock.
+	Total annual dividend income.

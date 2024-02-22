@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+{% block body %}
+{% for item in trans %}
+<p><span style="font-weight: 800;">Symbol</span>: {{ item.stock.symbol }}</p> --
+  <p><span style="font-weight: 800;">number of stocks</span>: {{ item.quantity }}</p> --
+  <p><span style="font-weight: 800;">Price</span>: {{ item.price }}</p> !!
+  <p><span style="font-weight: 800;">Total_price</span>: {{ item.total_price }}</p> ~~~~
+  <p><span style="font-weight: 800;">Total_price</span>: {{ item.total_price }}</p> ~~~~
+  <p><span style="font-weight: 800;">Portfolio</span>: {{ item.portfolio }}</p> ~~~~
+  <p><span style="font-weight: 800;">Type: {{ item.transaction_type }}</span>: {{ item.transaction_date }}</p> <br>
+{% endfor %}
+{% endblock body%}
+<section>
+    <div class="amount-hold">
+        <h4>{{ stock.name }}</h4>
+        <h4>({{ stock.symbol }})</h4>
+        <h1>${{ stock.current_price }} <small>CAD</small></h1>
+    </div>
+
+    <section class="data">
+        {% if portfolio_item %}
+
+        <div class="data-left">
+            <div class="head">
+                <h3>Protfolio that holding this stock</h3>
+                <!-- <a href="#">Add an account -></a> -->
+            </div>
+                <div class="card">
+                    {% for item in portfolio_item %}
+
+                    <div class="card-top stock-detail-card">
+                        <div class="top">
+                            <h1>{{ item.portfolio.name }}</h1>
+                        </div>
+
+                        <div class="portfolio-info">
+                            <div class="bal-sh">
+                                <p>Quantity</p>
+                                <h3>{{ item.qty }} shares</h3>
+                            </div>
+                            <div class="bal-ttl">
+                                <p>Total value</p>
+                                <h3>${{ item.total_amount }}</h3>
+                            </div>
+                            <div class="perf">
+                                <p>All time performance</p>
+                                <h3>
+                                    {% if item.calculate_profit.dol %}
+                                    <span>{{ item.calculate_profit.dol }}</span>
+                                    <span>{{ item.calculate_profit.pct }}%</span>
+                                    {% else %}
+                                    <strong>Not enough data to show</strong>
+                                    {% endif %}
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-bottom">
+                        <div class="portfolio-perf card-bottom-grid">
+                            <div class="avg-p card-bottom-flex">
+                                <h4>Average price</h4>
+                                <p>${{ item.purch_price }}CAD</p>
+                            </div>
+                            <div class="p-pct card-bottom-flex">
+                                <h4>% of my portfolio</h4>
+                                <p>1.69%</p>
+                            </div>
+                        </div>
+
+                        <div class="current-perf card-bottom-grid">
+                            <div class="curr-p card-bottom-flex">
+                                <h4>Today (show today gains)</h4>
+                                <p>$10.99 CAD</p>
+                            </div>
+                            <div class="all-proft card-bottom-flex">
+                                <h4>All time</h4>
+                                {% if item.calculate_profit.dol %}
+                                <p>{{ item.calculate_profit.dol }}</p>
+                                <p>{{ item.calculate_profit.pct }}%</p>
+                                {% else %}
+                                <strong>Not enough data to show</strong>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    
+                    {% endfor %}
+
+                </div>
+            
+        {% else %}
+        <strong>you don't have this stock in any portfolio</strong>
+        <strong>click here to add this to your porfolio</strong>
+        {% endif %}
+        
+        </div>
+        <div class="data-right">
+            <div class="head">
+                <h3>Watch List</h3>
+                <a href="#">Manage</a>
+            </div>
+            <div class="table">
+                <table>
+                    <div class="rap">
+                        
+                    </div>
+                    <tr>
+                      <td class="t-stock">
+                        <h3>AP.UN</h3>
+                        <p>Allied pro...</p>
+                      </td>
+                      <td class="t-own-stock">
+                        <h3><i>|</i> $22.89</h3>
+                        <p>-0.05(0.22%) CAD</p>
+                      </td>
+                      <td class="t-cur-stock">
+                        <h3><i>|</i> $22.89</h3>
+                        <p>-0.05(0.22%) CAD</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>Lois</td>
+                      <td>Griffin</td>
+                      <td>$150</td>
+                    </tr>
+                    <tr>
+                      <td>Joe</td>
+                      <td>Swanson</td>
+                      <td>$300</td>
+                    </tr>
+                    <tr>
+                      <td>Cleveland</td>
+                      <td>Brown</td>
+                      <td>$250</td>
+                    </tr>
+                  </table>
+            </div>
+        </div>
+    </section>
+</section>
+
+<style>
+    .card {
+        margin: 0;
+        padding: 0;
+    }
+    .card .card-top{
+        margin: 1.5rem;
+    }
+    .card .card-bottom {
+        padding: 1.5rem;
+    }
+    .stock-detail-card {
+        /* padding: 1.5rem; */
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgb(213, 213, 213);
+    }
+    .card .portfolio-info p, h3 {
+        font-weight: bold;
+    }
+    .card .portfolio-info {
+        display: flex;
+        gap: 3rem;
+    }
+    .card .portfolio-info .perf{
+        margin-left: auto;
+        text-align: right;
+    }
+    .card-bottom-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    .card-bottom-flex {
+        display: flex;
+        justify-content: space-between;
+    }
+    .card .card-bottom {
+        margin: 2rem 0;
+    }
+    .card .card-bottom h4{
+        font-weight: bold;
+    }
+</style>
+

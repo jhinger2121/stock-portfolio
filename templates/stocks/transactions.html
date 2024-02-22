@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<section class="transaction-section detail-spacing"> 
+    <div class="heading">
+        <h1>
+            All Transactions 
+            {% if portfolio %}
+                of ({{ portfolio.name }}){{ portfolio.get_account_type_display }}
+            {% endif %}
+        </h1>
+    </div>
+
+    <div class="table">
+        <table>
+            {% for tran in page_obj %}
+            <tr>
+              <td>
+                <p>Stock: <span class="bold">{{ tran.stock.symbol }}</span></p><br>
+                <p>Quantity: <span class="bold">{{ tran.quantity }}</span></p><br>
+                <p>Price: <span class="bold">${{ tran.price }}</span></p>
+              </td>
+              <td>
+                <p>Total Price: <span class="bold">${{ tran.total_price }}</span></p><br>
+                <p>Date: <span class="bold">{{ tran.transaction_date }}</span></p><br>
+                <p>Transaction Type: <span class="bold">{{ tran.get_transaction_type_display }}</span></p>
+              </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+        
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+        
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+</section>
+{% endblock body %}
+
