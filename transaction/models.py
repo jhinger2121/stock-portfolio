@@ -26,21 +26,22 @@ class TransactionManager(models.Manager):
             pass
 
 class Transaction(models.Model):
-    email_id = models.CharField(max_length=100, unique=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
-
-    quantity = models.FloatField()
-    price = models.DecimalField(max_digits=10, decimal_places=4)
-    total_price = models.DecimalField(max_digits=10, decimal_places=4)
-    transaction_date = models.DateTimeField()
     transaction_type_choices = [
         ('BY', 'Market Buy'),
         ('SL', 'Market Sell'),
         ('DR', "Dividend Reinvestment Buy")
     ]
-    transaction_type = models.CharField(max_length=2, choices=transaction_type_choices)
+    
+    email_id = models.CharField(max_length=100, unique=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+
+    quantity = models.FloatField(null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
+    transaction_date = models.DateTimeField(null=True, blank=True)
+    transaction_type = models.CharField(max_length=2, choices=transaction_type_choices, null=True, blank=True)
     # commission = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     objects = TransactionManager()

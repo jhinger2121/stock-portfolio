@@ -166,3 +166,47 @@ Dividend Information:
 	Upcoming and previous dividend payout dates.
 	Dividend income earned from each stock.
 	Total annual dividend income.
+
+
+WHAT I CAN ADD TO MY STACK PORTFOLIO
+scraper system design
+
+Clarify Requirements:
+	scrap stack information(price, dividend, x-dividex date, name..etc)
+	Design data schema for Stock models (to save scraped information)
+	
+	email scraper(scrape all the mails for wealthsimple
+
+
+
+##	CHAPATER for dividend
+	-- dividend goals
+	-- dividend calender
+		show upcoming dividend amount for each stock
+		(within upcoming week or 10 days)
+	-- Monthly dividends
+	-- dividend income
+		shows income by each stock
+	-- dividend forcast
+		for future referance(shows annually expected dividend)
+
+	Callarify Requirements:
+	-- dividend goals
+		show goal for the year(how much recieve $ in current year 2024)
+	-- dividend calender
+		show upcoming dividend amount for each stock
+		(within upcoming week or 10 days)
+		WHAT WE need
+			-- future ex-dividend date of stock
+			-- number of stocks before the ex-dividend
+			-- dividend amount (montly/quaterly)
+	-- Monthly dividends
+		show graph with time period 
+		(2 years. make it so we can choose from 6 monts to 5 year)
+		monthly
+			
+
+	-- dividend income
+		shows income by each stock
+	-- dividend forcast
+		for future referance(shows annually expected dividend)

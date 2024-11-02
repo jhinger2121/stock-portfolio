@@ -45,14 +45,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'stocks',
-    'analysis',
-    'news',
     'alert',
     "debug_toolbar",
     "portfolio",
     "portfolioitem",
     "transaction",
     "main",
+    "portfolio_management",
+    "dividend_goal",
 ]
 
 MIDDLEWARE = [

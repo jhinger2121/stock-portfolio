@@ -1,71 +1,97 @@
+import logging
 from celery import shared_task
 
 from stocks.utils import ticker_symbol_list, update_distribution, update_portfolio, update_stock
 from stocks.scrape_stock_info import Symbol
 from stocks.models import Stock
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class StockInformation:
     def __init__(self):
         stock_data = None
+    
 
-    def extrat_data(self):
-        # get ticker sumbols
-        symbols = ticker_symbol_list()
-        data = {}
-        for stock_obj in symbols:
-            print(stock_obj.symbol, stock_obj.yahoo_ticker_symbol)
+    def get_symbol_data(self, stock_obj):
+        """Fetch data for a single stock symbol."""
+        try:
             symbol = Symbol(stock_obj.yahoo_ticker_symbol)
 
-            stock_name = symbol.stock_data().get_stock_name()
-            if stock_name:
-                #ret:dct ex_dividend_date, dividend
-                dividend_info = symbol.stock_data().get_dividends_info()
-                if dividend_info:
-                    price = symbol.stock_data().get_price()
-                    ex_dividend_date = dividend_info["ex_dividend_date"]
-                    dividend = dividend_info["dividend"]
-                    pay_period = dividend_info["pay_period"]
+            stock_name = symbol.get_stock_name()
 
-                    s_yield = symbol.stock_data().get_stock_yeild(price, pay_period, dividend)
-                    data[stock_obj] = {
-                        "name": stock_name, "price": price, "ex_date": ex_dividend_date,
-                        "dividend": dividend, "pay_period": pay_period, "yield": s_yield
-                    }
-                    print("Stock Name:", stock_name, "price:", price, "yield:", s_yield, 
-                    "ex_date:", ex_dividend_date, "pay_period:", pay_period, "dividend:", dividend)
+            dividend_info = symbol.get_dividends_info()
+
+            price = symbol.get_price()
+            dividend = dividend_info["dividend"]
+            pay_period = dividend_info["pay_period"]
+            stock_yield = symbol.get_stock_yield(price, pay_period, dividend)
+
+            return {
+                "name": stock_name,
+                "price": price,
+                "ex_date": dividend_info["ex_dividend_date"],
+                "dividend": dividend,
+                "pay_period": pay_period,
+                "yield": stock_yield
+            }
+
+        except Exception as e:
+            logger.error(f"Error fetching data for symbol {stock_obj.yahoo_ticker_symbol}: {e}")
+            return None
+
+    def extract_data(self):
+        symbols = ticker_symbol_list()
+        data = {}
+
+        for stock_obj in symbols:
+            logger.info(f"Processing {stock_obj.symbol} ({stock_obj.yahoo_ticker_symbol})")
+            stock_data = self.get_symbol_data(stock_obj)
+            if stock_data:
+                data[stock_obj] = stock_data
+                logger.info(f"Stock Name: {stock_data['name']}, Price: {stock_data['price']}, "
+                            f"Yield: {stock_data['yield']}, Ex-Date: {stock_data['ex_date']}, "
+                            f"Pay Period: {stock_data['pay_period']}, Dividend: {stock_data['dividend']}")
+
         return data
     
     def update_stock_info(self):
-        self.stock_data = self.extrat_data()
+        logger.info("Updating stock information...")
+        self.stock_data = self.extract_data()
+        if self.stock_data:
+            logger.info("Stock information updated successfully.")
+        else:
+            logger.warning("No stock information found.")
 
     def reset_data(self):
+        logger.info("Resetting stock data...")
         self.stock_data = None
+        logger.info("Stock data reset successfully.")
 
     def update_price(self):
-        stock_data = self.stock_data
-        if stock_data:
-            for value in stock_data:
-                # update stock price
-                update_stock(value, stock_data[value]['price'])
-                # update portfolio_item price
-                update_portfolio(value, stock_data[value]['price'])
+        if self.stock_data:
+            logger.info("Updating stock prices...")
+            for stock_obj, details in self.stock_data.items():
+                # Update stock price
+                update_stock(stock_obj, details['price'])
+                # Update portfolio item price
+                update_portfolio(stock_obj, details['price'])
+            logger.info("Stock prices updated successfully.")
         else:
-            print("No data found")
+            logger.warning("No data found to update prices.")
 
     def update_distribution(self):
         if self.stock_data:
-            for value in self.stock_data:
-                stock_name = self.stock_data[value]["name"]
-                s_yield = self.stock_data[value]["yield"]
-                ex_dividend_date = self.stock_data[value]["ex_date"]
-                pay_period = self.stock_data[value]["pay_period"]
-                dividend = self.stock_data[value]["dividend"]
-
-                update_distribution(value, dividend, ex_dividend_date, s_yield, pay_period, stock_name)
-
+            logger.info("Updating stock distribution...")
+            for stock_obj, details in self.stock_data.items():
+                update_distribution(
+                    stock_obj, details['dividend'], details['ex_date'],
+                    details['yield'], details['pay_period'], details['name']
+                )
+            logger.info("Stock distribution updated successfully.")
         else:
-            print("No data found")
+            logger.warning("No data found to update distribution.")
 
 
 stock = StockInformation()

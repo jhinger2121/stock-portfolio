@@ -6,6 +6,7 @@ display: grid;
   font-weight: normal;
 */
 
+
 :root {
     --lk-c-links-red: #c31601;
     --lk-c-links-light-darkblue: #0052b5;
@@ -121,10 +122,7 @@ body {
     grid-template-columns: 
     minmax(180px, 18%) auto;
 }
-.container{
-    display: grid;
-    grid-template-columns: 200px minmax(0, 800px) 200px;
-}
+
 
 
 /* DESIGNING LEFT SIDE (NAV) */
@@ -185,15 +183,15 @@ body {
     /* background-color: var(--color-grey-mute); */
     border-bottom: 1px solid var(--color-background-black-mute);
 }
-.container-center {
+/* .container-center {
     margin: 2rem 4rem;
     display: grid;
     grid-template-columns: 1.70fr 1.30fr;
     gap: 3rem;
-}
-.main-top {
+} */
+/* .main-top {
     margin: 2rem 4rem;
-}
+} */
 .dashboard-mid {
     margin: 2rem 4rem;
     display: grid;
@@ -201,8 +199,8 @@ body {
     gap: 4rem;
 }
 .dashboard-mid canvas {
-    min-height: 350px;
-    max-height: 450px;
+    min-height: 450px;
+    max-height: 550px;
     /* #6f6e78 */
 }
 
@@ -249,6 +247,23 @@ body {
 .data-right .head a{
     margin-left: auto;
 }
+.dividend-income-table {
+    height: 430px;
+    overflow: scroll;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.dividend-income-table table {
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 5px;
+    background-color: #DDD;
+}
+.dividend-income-table tr {
+    border-bottom: 1px solid white;
+}
+.dividend-income-table tr:hover {background-color: white;}
+
 .data-right .table{
     height: 430px;
     overflow: scroll;
@@ -258,7 +273,7 @@ body {
 
 .table table {
     border-collapse: collapse;
-    width: 100%;
+    /* width: 100%; */
     border-radius: 5px;
     background-color: #DDD;
 }
@@ -289,29 +304,66 @@ body {
 .amount-hold h3 > span{
     font-weight: bold;
 }
-.portfolio-header {
+/* .portfolio-header {
     display: grid;
     grid-template-columns: minmax(0, 600px) minmax(0, 600px);
     gap: 3rem;
     margin: 3rem 0;
+} */
+
+/* DIVIDEND GOAL STYLE STARTtttttttttt */
+.dividend-info {
+    border: 1px solid;
+    border-radius: 25px;
+    padding: 10px  20px;
 }
-.dividend-info h3:first-child {
-    color: #181818;
+.dividend-info .target {
+    color: #003366;
 }
-.dividend-info .b-div p{
+.dividend-info .goal-top p{
     font-weight: bold;
 }
-.dividend-info .b-div p:first-of-type{
-    color: #181818;
-    font-weight: normal;
+.dividend-info .goal-top {
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+}
+.dividend-info .goal-mid{
+    display: flex;
+    align-items: flex-end;
+    margin-bottom: 10px;
+}
+.dividend-info .goal-bottom .adj-mar {
+    margin-right: 20px;
+}
+.dividend-info .goal-mid h4{
+    font-size: 1.2rem;
+    color: rgb(115, 114, 114);
+}
+.dividend-info p{
+    font-size: 1rem;
+}
+.progress-bar-container {
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
 }
 
+.progress-bar {
+    height: 100%;
+    background-color: #003366;
+    border-radius: 10px;
+    position: relative;
+}
+
+/* DIVIDEND GOAL STYLE ENDDDDDDDDDDDDDD */
+
 .graph-section {
-    display: grid;
-    /* grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    grid-template-rows: repeat(auto-fit, 1fr); */
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 4rem;
+    /* display: grid; */
+    /* grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); */
+    /* gap: 4rem; */
 }
 .graph-section .msg p {
     color: rgb(255, 38, 0);
@@ -324,11 +376,6 @@ body {
 
 .detail-spacing {
     margin: 2.5rem 4rem;
-}
-.data {
-    display: grid;
-    grid-template-columns: 2.5fr 1.5fr;
-    gap: 6rem;
 }
 
 .card {
@@ -361,13 +408,8 @@ body {
 }
 
 
+
 /* TRANSACTIONS PAGE STYLE */
 .transaction-section {
     
-}
-
-@media screen and (max-width: 800px) {
-    .portfolio-header, .graph-section, .container-center {
-        grid-template-columns: 1fr;
-    }
 }

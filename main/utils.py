@@ -1,102 +1,115 @@
 import decimal, locale
+from django.conf import settings
 
+locale.setlocale(locale.LC_ALL, '')
 
 def stocks_info(transactions):
     portfolio_data = {}
+    total_holding = decimal.Decimal(0)
+    stocks_capital = {}
+
     data = get_stock_data(transactions)
-    total_holding = 0
-    stocks_capital = None
-    for key in data:
-        holding = 0
-        stock = {}
 
-        for key_2 in data[key]:
-            stocks = data[key][key_2]["stocks"]
-            price = data[key][key_2]["avgprice"]
-            profit = data[key][key_2]["profit"]
+    for portfolio_id, stocks in data.items():
+        portfolio_holding = decimal.Decimal(0)
+        portfolio_stock_info = {}
 
-            # each stock profit or loss and holdings
-            # if not stocks_capital:
-            #     stocks_capital = data[key]
-            
-            # if key_2 in stocks_capital:
-            #     print(stocks_capital, key_2, stocks_capital[key_2])
-            #     stocks_capital[key_2]["stocks"] = stocks_capital[key_2]["stocks"] + stocks
-            #     stocks_capital[key_2]["avgprice"]
-            #     stocks_capital[key_2]["profit"] = stocks_capital[key_2]["profit"] + profit
-            # else:
-            #     stocks_capital[key_2] = {"stocks": stocks}
-            #     stocks_capital[key_2] = {"avgprice": price}
-            #     stocks_capital[key_2] = {"profit": profit}
+        for stock_symbol, stock_data in stocks.items():
+            quantity = stock_data["stocks"]
+            avg_price = stock_data["avgprice"]
+            profit = stock_data["profit"]
 
-            amount = 0
-            if stocks > 0.009:
-                amount = (price * decimal.Decimal(stocks)) + profit
-                holding += amount
+            if quantity > decimal.Decimal(0.009):
+                holding_amount = (avg_price * decimal.Decimal(quantity)) + profit
+                portfolio_holding += holding_amount
 
-            stock[key_2] = {
-                "holding": amount, "profit": data[key][key_2]["profit"]
-            }
-        total_holding += holding
-        portfolio_data[key] = stock
-        portfolio_data[key]["holding"] = locale.currency(holding, grouping=True)
-    portfolio_data["holding"] = locale.currency(total_holding, grouping=True)
+                portfolio_stock_info[stock_symbol] = {
+                    "holding": float(holding_amount),
+                    "profit": float(profit)
+                }
+
+                if stock_symbol in stocks_capital:
+                    stocks_capital[stock_symbol]["stocks"] += quantity
+                    stocks_capital[stock_symbol]["profit"] += profit
+                else:
+                    stocks_capital[stock_symbol] = {
+                        "stocks": quantity,
+                        "avgprice": avg_price,
+                        "profit": profit
+                    }
+
+        total_holding += portfolio_holding
+        portfolio_data[portfolio_id] = portfolio_stock_info
+        portfolio_data[portfolio_id]["holding"] = locale.currency(float(portfolio_holding), grouping=True)
+
+    portfolio_data["holding"] = locale.currency(float(total_holding), grouping=True)
     portfolio_data['stocks'] = stocks_capital
+
     return portfolio_data
 
 def get_stock_data(transactions):
     data = {}
-    for tran in transactions:
-        tran_price = tran.price
-        if tran.stock.price:
-            tran_price = tran.stock.price
-        if tran.stock.currency == "USD":
-            tran_price = tran.price * decimal.Decimal(1.34)
-        tran_stocks = tran.quantity
-        tran_type = tran.transaction_type
 
-        if tran.portfolio.id in data:
-            if tran.stock.symbol in data[tran.portfolio.id]:
+    for transaction in transactions:
+        # Determine the price of the transaction
+        transaction_price = transaction.price
+        if transaction.stock.price:
+            transaction_price = transaction.stock.price
 
-                stocks = data[tran.portfolio.id][tran.stock.symbol]["stocks"]
-                profit = data[tran.portfolio.id][tran.stock.symbol]["profit"]
-                avg_price = data[tran.portfolio.id][tran.stock.symbol]["avgprice"]
-                
-                if tran_type == "BY" or tran_type == "DR":
-                    prev_total = avg_price * decimal.Decimal(stocks)
-                    current_total = tran_price * decimal.Decimal(tran_stocks)
-                    total_share = stocks + tran_stocks
-                    avg_cost_per_share = (prev_total + current_total) / decimal.Decimal(total_share)
-                    data[tran.portfolio.id][tran.stock.symbol]['stocks'] = total_share
-                    data[tran.portfolio.id][tran.stock.symbol]['avgprice'] = avg_cost_per_share
-                elif tran_type == "SL":
-                    # profit = sell price - price * sell stocks
-                    # profit = old_profit - curr_profit
-                    # stocks = stocks - sell stocks
-                    gain_or_loss = (tran_price - avg_price) * decimal.Decimal(tran.quantity)
-                    # print(tran_price, avg_price, tran.quantity, tran.transaction_date)
-                    final_gain_or_loss = profit + gain_or_loss
-                    data[tran.portfolio.id][tran.stock.symbol]["profit"] = final_gain_or_loss
-                    data[tran.portfolio.id][tran.stock.symbol]["stocks"] = stocks - tran.quantity
+        # Convert price to USD if necessary
+        if transaction.stock.currency == "USD":
+            transaction_price = transaction.price * decimal.Decimal(settings.CAD_TO_USD)
+
+        transaction_quantity = transaction.quantity
+        transaction_type = transaction.transaction_type
+        portfolio_id = transaction.portfolio.id
+        stock_symbol = transaction.stock.symbol
+
+        if portfolio_id not in data:
+            data[portfolio_id] = {}
+
+        if stock_symbol not in data[portfolio_id]:
+            data[portfolio_id][stock_symbol] = {
+                "stocks": 0,
+                "profit": 0,
+                "avgprice": 0
+            }
+
+        stock_data = data[portfolio_id][stock_symbol]
+        current_stocks = stock_data["stocks"]
+        current_profit = stock_data["profit"]
+        current_avg_price = stock_data["avgprice"]
+
+        if transaction_type in ["BY", "DR"]:
+            total_shares = current_stocks + transaction_quantity
+            if total_shares == 0:
+                new_avg_price = 0
             else:
-                data[tran.portfolio.id][tran.stock.symbol] = {
-                    "stocks": tran.quantity, "profit": 0, "avgprice": tran_price
-                }
-        else:
-            data[tran.portfolio.id] = {tran.stock.symbol: {
-                    "stocks": tran.quantity, "profit": 0, "avgprice": tran_price
-                }}
-        # print(data)
-    # print("!!!!!!!!!!!!!!!!!!!!!!!!", data)
+                prev_total_cost = current_avg_price * decimal.Decimal(current_stocks)
+                new_total_cost = transaction_price * decimal.Decimal(transaction_quantity)
+                new_avg_price = (prev_total_cost + new_total_cost) / decimal.Decimal(total_shares)
+            
+            stock_data["stocks"] = total_shares
+            stock_data["avgprice"] = new_avg_price
+
+        elif transaction_type == "SL":
+            gain_or_loss = (transaction_price - current_avg_price) * decimal.Decimal(transaction_quantity)
+            stock_data["profit"] = current_profit + gain_or_loss
+            stock_data["stocks"] = current_stocks - transaction_quantity
+
+        data[portfolio_id][stock_symbol] = stock_data
+
     return data
+
 
 def dividend_information(transcations, year_count):
     trans = transcations.filter(transaction_type = "DR")
-    data = find_dividend_reveived_monthly(trans, year_count)
+    data = find_dividend_received_monthly(trans, year_count)
 
     total_dividend = data['total_dividend']
-    dividend_by_months = data['dividend_by_montly'] 
-    dividend_by_stcoks = data['dividend_by_stock'] 
+    dividend_by_months = data['dividend_by_monthly'] 
+    dividend_by_stcoks = data['dividend_by_stock']
+    dividend_by_annually = data['dividend_by_annually']
     
     months = year_count * 12
     dividend_months = []
@@ -119,43 +132,80 @@ def dividend_information(transcations, year_count):
         "total_dividend_received": total_dividend,
         "dividend": {"months": dividend_months, "values": dividend_values},
         "dividend_by_stocks": dividend_by_stcoks,
+        "dividend_by_annually": dividend_by_annually
     }
 
-def find_dividend_reveived_monthly(objects, period=None):
+import decimal
+from datetime import datetime
+from django.conf import settings
+
+def find_dividend_received_monthly(objects, period=None):
     dividend_received_each_month = {}
+    dividend_annual_based = {}
     total_received_dividend = 0
     dividend_received_by_stock = {}
 
     for tran in objects:
-        # total dividend reveived
-        total_received_dividend += tran.total_price
+        # Set transaction price (to USD or CAD)
+        total_price = tran.price
+        if tran.stock.currency == "USD":
+            total_price *= decimal.Decimal(settings.CAD_TO_USD)
+        total_price = round(total_price, 2)
 
-        # dividend recevied as monthly or annually
-        if period and period > 2:
-            year = tran.transaction_date.year
-            key = str(year)
-            if key in dividend_received_each_month:
-                dividend_received_each_month[key] += tran.total_price
-            else:
-                dividend_received_each_month[key] = tran.total_price
-        else:
-            month = tran.transaction_date.strftime("%B")
-            year = tran.transaction_date.year
-            key = str(month) +" " + str(year)
-            if key in dividend_received_each_month:
-                dividend_received_each_month[key] += tran.total_price
-            else:
-                dividend_received_each_month[key] = tran.total_price
-                
-        # dividend recevied by each stock
-        stock_as_key = tran.stock.symbol
-        if stock_as_key in dividend_received_by_stock:
-            dividend_received_by_stock[stock_as_key] += tran.total_price
-        else:
-            dividend_received_by_stock[stock_as_key] = tran.total_price
+        # Update total dividend received
+        total_received_dividend += total_price
+
+        # Extract date components
+        month = str(tran.transaction_date.strftime("%B"))
+        day = str(tran.transaction_date.day)
+        year = str(tran.transaction_date.year)
+        date = f"{month} {day}"
+        symbol = tran.stock.symbol
+
+        # Update annual-based dividend data
+        if year not in dividend_annual_based:
+            dividend_annual_based[year] = {"total": 0}
+        if month not in dividend_annual_based[year]:
+            dividend_annual_based[year][month] = {"total": 0, "stocks": {}}
         
+        dividend_annual_based[year]["total"] += total_price
+        dividend_annual_based[year][month]["total"] += total_price
+
+        dividend_annual_based[year][month]["stocks"] = []
+        dividend_annual_based[year][month]["stocks"].append({
+            "symbol": symbol,
+            "total_price": total_price,
+            "date": tran.transaction_date
+        })
+
+        # Update dividend received each month based on period
+        if period and period > 2:
+            year_key = str(year)
+            if year_key in dividend_received_each_month:
+                dividend_received_each_month[year_key] += total_price
+            else:
+                dividend_received_each_month[year_key] = total_price
+        else:
+            month_year_key = f"{month} {year}"
+            if month_year_key in dividend_received_each_month:
+                dividend_received_each_month[month_year_key] += total_price
+            else:
+                dividend_received_each_month[month_year_key] = total_price
+
+        # Update dividend received by each stock
+        if symbol in dividend_received_by_stock:
+            dividend_received_by_stock[symbol] += total_price
+        else:
+            dividend_received_by_stock[symbol] = total_price
+    # sorted_dividend_received_by_stock = dict(sorted(dividend_received_by_stock.items(), key=lambda item: item[1], reverse=True))
+    
+    stock_symbols = list(dividend_received_by_stock.keys())
+    stock_amounts = list(dividend_received_by_stock.values())
+
     return {
         "total_dividend": total_received_dividend,
-        "dividend_by_montly": dividend_received_each_month,
-        "dividend_by_stock": dividend_received_by_stock
+        "dividend_by_monthly": dividend_received_each_month,
+        "dividend_by_stock": {'stock_symbols':stock_symbols,
+                              'stock_amounts': stock_amounts},
+        "dividend_by_annually": dividend_annual_based
     }

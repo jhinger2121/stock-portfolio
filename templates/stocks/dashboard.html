@@ -2,97 +2,224 @@
 {% block header %}
     <p></p>
 {% endblock header %}
+{% block head %}
+<style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 10px;
+        text-align: left;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .month-header {
+        cursor: pointer;
+        background-color: #f9f9f9;
+        padding: 10px;
+        border: 1px solid #ddd;
+        margin-bottom: 5px;
+    }
+    .stock-details {
+        display: none;
+    }
+    
+  .year, .month {
+      cursor: pointer;
+      margin-top: 10px;
+      padding: 5px;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+  }
+  .stocks, .months {
+      margin-left: 20px;
+      display: none;
+  }
+
+  body {
+      font-family: Arial, sans-serif;
+  }
+  table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+  }
+  th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+  }
+  th {
+      background-color: #f2f2f2;
+  }
+  .month-header {
+      cursor: pointer;
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 5px;
+  }
+  .stock-details {
+      display: none;
+      margin-left: 20px;
+  }
+
+</style>
+{% endblock head %}
 {% block body %}
-<div class="main-top">
-    <h1>$44,479.11</h1>
-    <p>
-        <span>-$20.89</span>
-        <span>(-0.05) all time</span>
-    </p>
+<div class="container">
+    <div class="row">
+              
+        <!-- <div class="col-lg-6">
+        <div id="amountHolding" class="text-center text-md-start">
+            <h3 class="mb-1">
+            <span id="portfolio" value="{{ portfolio.id }}" name="{{ portfolio.name }}">{{ portfolio.name }}</span>
+            <small class="text-muted">({{ portfolio.get_account_type_display }})</small>
+            </h3>
+            <h1 class="display-5">{{ portfolio.analysis }} <small class="text-muted">CAD</small></h1>
+            <p class="text-muted">{{ portfolio.all_items_capital.dol }} ({{ portfolio.all_items_capital.pct }}%) all time</p>
+        </div>
+        </div> -->
+        
+        <div class="col-lg-6 main-top">
+            <h1 class="display-5"></h1>
+            <p>
+                <span class="text-danger">-$20.89</span>
+                <span>(-0.05) all time</span>
+            </p>
+        </div>
+        <div class="col-lg-6">
+            <a href="{% url 'get_emails' %}" class="btn btn-primary">Get Emails</a>
+        </div>
+    </div>
 </div>
-<div class="container-center">
 
-    <div class="main">
-        {% for portfolio in portfolios %}
-        <div class="portfolio" id="{{ portfolio.id }}">
-            <div class="top">
-                <div class="left">
-                    <h4><a href="{% url 'portfolio_detail' portfolio.slug portfolio.id %}">{{ portfolio.name }}</a></h4>
-                    <h3>{{ portfolio.get_account_type_display }}</h3>
-                </div>
-                <div class="right">
-                    <h4>{{ portfolio.portfolioitem_set.count }} positions</h4>
+<!-- <div class="container-center"> -->
+    <div class="container">
+        <div class="row">
+            <!-- Main Content (Left) -->
+            <div class="col-lg-8">
+                <div class="main">
+                    {% for portfolio in portfolios %}
+                    <div class="portfolio" id="{{ portfolio.id }}">
+                        <div class="top">
+                            <div class="left">
+                                <h4><a href="{% url 'portfolio_detail' portfolio.slug portfolio.id %}">{{ portfolio.name }}</a></h4>
+                                <h3>{{ portfolio.get_account_type_display }}</h3>
+                            </div>
+                            <div class="right">
+                                <h4>{{ portfolio.portfolioitem_set.count }} positions</h4>
+                            </div>
+                        </div>
+                        <div class="bottom">
+                            <div class="left">
+                                <h4>Balance</h4>
+                                <h3></h3>
+                            </div>
+                            <div class="right">
+                                <h4>Performance</h4>
+                                <!-- <h3>{{ portfolio.analysis }} | 2.33%</h3> -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="bottom">
-                <div class="left">
-                    <h4>Balance</h4>
-                    <h3></h3>
-                </div>
-                <div class="right">
-                    <h4>Performance</h4>
-                    <!-- <h3>{{ portfolio.analysis }} | 2.33%</h3> -->
+
+            <div class="col-lg-4">
+                <div class="data-right">
+                    <div class="head">
+                        <h3>Recent Transactions</h3>
+                        <a href="{% url 'transactins' %}">More Transcations</a>
+                    </div>
+                    <div class="table">
+                        <table>
+                            {% for tran in transactions|slice:":20" %}
+                            <tr>
+                              <td>
+                                <p>Stock: <span class="bold">{{ tran.stock.symbol }}</span></p><br>
+                                <p>Quantity: <span class="bold">{{ tran.quantity }}</span></p><br>
+                                <p>Price: <span class="bold">${{ tran.price }}</span></p>
+                              </td>
+                              <td>
+                                <p>Total Price: <span class="bold">${{ tran.total_price }}</span></p><br>
+                                <p>Date: <span class="bold">{{ tran.transaction_date }}</span></p><br>
+                                <p>Transaction Type: <span class="bold">{{ tran.get_transaction_type_display }}</span></p><br>
+                              </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-        {% endfor %}
     </div>
+<!-- </div> -->
+
+    
 
 
-    <div class="data-right">
-        <div class="head">
-            <h3>Recent Transactions</h3>
-            <a href="{% url 'transactins' %}">More Transcations</a>
+    
+<!-- </div> -->
+
+<!-- Graph Section -->
+<div class="container my-4 graph-section">
+    <div class="row">
+        <!-- Monthly Dividends -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Monthly Dividends</h3>
+                    <label for="yearSelect">Select Year:</label>
+                    <select id="yearSelect" class="form-select mb-3">
+                        <option value="">Select Year</option>
+                    </select>
+                    <canvas id="lineChart" width="400" height="200"></canvas>
+                    <label for="yearSelect_bottom">Select Year:</label>
+                    <select id="yearSelect_bottom" class="form-select"></select>
+                    <div id="dividendData"></div>
+                </div>
+            </div>
         </div>
-        <div class="table">
-            <table>
-                {% for tran in transactions|slice:":20" %}
-                <tr>
-                  <td>
-                    <p>Stock: <span class="bold">{{ tran.stock.symbol }}</span></p><br>
-                    <p>Quantity: <span class="bold">{{ tran.quantity }}</span></p><br>
-                    <p>Price: <span class="bold">${{ tran.price }}</span></p>
-                  </td>
-                  <td>
-                    <p>Total Price: <span class="bold">${{ tran.total_price }}</span></p><br>
-                    <p>Date: <span class="bold">{{ tran.transaction_date }}</span></p><br>
-                    <p>Transaction Type: <span class="bold">{{ tran.get_transaction_type_display }}</span></p><br>
-                  </td>
-                </tr>
-                {% endfor %}
-            </table>
+
+        <!-- Dividend Income -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Dividend Income</h3>
+                    <canvas id="dividend-income-chart"></canvas>
+                    <div id="all-dividends" class="mt-3">
+                        <div class="dividend-income-table">
+                            <table id="dividend-income" class="table">
+                                <tr>
+                                    <th></th>
+                                    <th>Payout</th>
+                                </tr>
+                                <!-- Dividend data here -->
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-
-
-    <!-- <div class="right">
-        <div class="table">
-            <table>
-                <tr>
-                    <th class="h">Holdings</th>
-                    <th class="v">Total values</th>
-                </tr>
-                <tr>
-                    <td class="t-stock">
-                        <h4>AP.UN</h4>
-                        <p>1185.8919 shares</p>
-                    </td>
-                    <td class="t-cur-stock">
-                        <h4>$22.89 CAD</h4>
-                        <p>-0.05(0.22%)</p>
-                    </td>
-                </tr>
-            </table>
-        </div>
-    </div> -->
 </div>
-<section class="dashboard-mid">
-    <div class="stocks"></div>
-    <div class="graph">
-        <h3>Dividend information.</h3>
-        <canvas id="dashboard-dividend-info-chart"></canvas>
-    </div>
-</section>
+
+
+<div class="graph-section detail-spacing">
+    <section class="dashboard-mid">
+        <div class="stocks"></div>
+        <div class="graph">
+            <h3>Dividend information.</h3>
+            <canvas id="dashboard-dividend-info-chart"></canvas>
+        </div>
+    </section>
+</div>
+
 
 <script>
     const url = "total-dividend/year-1/"
@@ -156,5 +283,344 @@
     }
 
     fetchGraph(url)
+
+    // Function to create chart
+  function getLast12MonthsData() {
+    const today = new Date();
+    const last12Months = [];
+    
+    // Start with the current month first
+    for (let i = 0; i < 12; i++) {
+        const month = new Date(today.getFullYear(), today.getMonth() - i, 1);  // Go back one month at a time
+        const monthString = month.toLocaleString('default', { month: 'long' });
+        const year = month.getFullYear();
+        last12Months.push({ year, monthString });
+    }
+    
+    return last12Months.reverse(); // Reverse to get the months in the correct order
+  }
+  const lineChartCTX = document.getElementById('lineChart').getContext('2d');
+  let chart = new Chart(lineChartCTX, {
+    type: 'line',
+    data: {
+        labels: [],  // Dates will go here
+        datasets: [{
+            label: 'Stock Amounts',
+            data: [],   // Amounts will go here
+            fill : false,
+            tension: 0.5,
+            borderColor: '#003366',
+            backgroundColor: '#003366'
+        }]
+    },
+    options : {
+      plugins: {
+        title: {
+          display: true,
+          text: 'Dividend received each month - by given period'
+        },
+      },
+      maintainAspectRatio: false,
+      responsive: true,
+      title : {
+        display : true,
+        text : 'Chart JS Line Chart Example'
+      }
+    }
+  });
+  
+  function updateChart(data, selectedYear) {
+    const labels = [];
+    const totals = [];
+
+    if (selectedYear) {
+        // Use selected year's data
+        const yearData = data[selectedYear];
+        const months = Object.keys(yearData).filter(month => month !== "total");  // Exclude the "total" key
+        months.forEach(month => {
+            labels.push(month);  // Month names
+            totals.push(parseFloat(yearData[month].total));  // Corresponding totals
+        });
+    } else {
+        // No year selected, gather data for last 12 months
+        const last12Months = getLast12MonthsData();
+
+        last12Months.forEach(({ year, monthString }) => {
+            if (data[year] && data[year][monthString]) {
+                labels.push(`${monthString} ${year}`);  // Label format: "Month Year"
+                totals.push(parseFloat(data[year][monthString].total));  // Monthly total
+            }
+        });
+    }
+
+    // Update the chart with the new labels and data
+    chart.data.labels = labels;
+    chart.data.datasets[0].data = totals;
+    chart.update();
+  }
+
+    // Event listener for year selection
+  document.getElementById('yearSelect').addEventListener('change', (e) => {
+      const selectedYear = e.target.value;
+      updateChart(dividend_data_by_time, selectedYear);
+  });
+
+  function populateYearSelect(data, locater, default_opt=null) {
+    const yearSelect = document.getElementById(locater);
+    // Get years from data object
+    const years = Object.keys(data);
+
+    years.forEach(year => {
+      const option = document.createElement('option');
+      option.value = year;
+      option.textContent = year;
+      yearSelect.appendChild(option);
+    });
+    if (default_opt) {
+      const currentYear = new Date().getFullYear();
+      yearSelect.value = currentYear; 
+    }
+  }
+
+  function buildDividendData(data, year) {
+    if (!year) {
+      year = document.getElementById('yearSelect_bottom').value;
+      year = year.toString()
+    }
+
+      const dividendContainer = document.getElementById('dividendData');
+      dividendContainer.innerHTML = ''; // Clear previous data
+
+      const yearData = data[year];
+      for (const month in yearData) {
+          if (month !== 'total') {
+              // Create month header with total
+              const monthDiv = document.createElement('div');
+              monthDiv.classList.add('month-header');
+              monthDiv.innerHTML = `<strong>${month}</strong>: Total Dividend - $${yearData[month].total}`;
+
+              // Create a table for stock details
+              const stockTable = document.createElement('table');
+              stockTable.classList.add('stock-details');
+
+              const tableHeader = `
+                  <thead>
+                      <tr>
+                          <th>Stock Symbol</th>
+                          <th>Amount ($)</th>
+                          <th>Date</th>
+                      </tr>
+                  </thead>
+              `;
+              stockTable.innerHTML = tableHeader;
+
+              const stockBody = document.createElement('tbody');
+
+              yearData[month].stocks.forEach(stock => {
+                  const stockRow = document.createElement('tr');
+                  stockRow.innerHTML = `
+                      <td>${stock.symbol}</td>
+                      <td>${stock.amount}</td>
+                      <td>${new Date(stock.date).toLocaleDateString()}</td>
+                  `;
+                  stockBody.appendChild(stockRow);
+              });
+
+              stockTable.appendChild(stockBody);
+
+              // Toggle visibility of stock details on click
+              monthDiv.addEventListener('click', () => {
+                  stockTable.style.display = stockTable.style.display === 'none' ? 'table' : 'none';
+              });
+
+              dividendContainer.appendChild(monthDiv);
+              dividendContainer.appendChild(stockTable);
+          }
+      }
+  }
+  document.getElementById('yearSelect_bottom').addEventListener('change', (event) => {
+      const selectedYear = event.target.value;
+      buildDividendData(dividend_data_by_time, selectedYear);
+  });
+
+  // DIVIDEND INCOME CHART -- START
+  const dividendTable = document.getElementById('dividend-income')
+function dividendIncomeChart(results, totalAmount) {
+    var paragraph = document.createElement("p");
+    paragraph.textContent = "$" + totalAmount + " received as dividend so far.";
+    // if (value) {
+    //   amountHolding.append(paragraph)
+    // }
+    const topN = 7;
+    // Extract the stock symbols and amounts
+    const { stock_symbols, stock_amounts } = results;
+
+    // Create an array of objects to sort the data
+    const data = stock_symbols.map((symbol, index) => ({
+        symbol,
+        amount: stock_amounts[index]
+    }));
+    // Sort the data in descending order by amount
+    data.sort((a, b) => b.amount - a.amount);
+
+    // this is dividend recieved by stock
+    // and shows under the graph
+    for (let i = 0; i < data.length; i++) {
+      let row = document.createElement('tr');
+      let symbolCell = document.createElement('td');
+      let priceCell = document.createElement('td');
+
+      // Set the text content of the cells
+      symbolCell.innerHTML = "<p>" + data[i].symbol + "</p>";
+      priceCell.innerHTML = "<p>" + data[i].amount + "</p>";
+
+      // Append cells to the row
+      row.appendChild(symbolCell);
+      row.appendChild(priceCell);
+
+      // Append row to the table
+      dividendTable.appendChild(row);
+    }
+    // Separate the top N items and the rest
+    const topData = data.slice(0, topN);
+    const otherData = data.slice(topN);
+    // Calculate the total for "Other" category
+    var otherAmount = otherData.reduce(function(sum, item) {
+        return sum + parseInt(item.amount);
+    }, 0);
+
+    // Prepare the final data for the chart
+    const finalSymbols = topData.map(item => item.symbol);
+    const finalAmounts = topData.map(item => item.amount);
+
+    if (otherData.length > 0) {
+        finalSymbols.push('Other');
+        finalAmounts.push(otherAmount);
+    }
+    // Calculate total amount for percentages
+    new Chart(document.getElementById("dividend-income-chart"), {
+        type: 'doughnut',
+        data: {
+            labels: finalSymbols,
+            datasets: [{
+                label: 'Dividend',
+                data: finalAmounts,
+                backgroundColor: [
+                    'rgba(0, 51, 102, 1)',    // Deep Navy
+                    'rgba(204, 204, 204, 1)', // Warm Grey
+                    'rgba(0, 51, 102, 0.8)',  // Slightly transparent Deep Navy
+                    'rgba(204, 204, 204, 0.8)', // Slightly transparent Warm Grey
+                    'rgba(0, 51, 102, 0.6)',  // More transparent Deep Navy
+                    'rgba(204, 204, 204, 0.6)', // More transparent Warm Grey
+                    'rgba(0, 51, 102, 0.4)',  // Even more transparent Deep Navy
+                    'rgba(204, 204, 204, 0.4)' // Even more transparent Warm Grey
+                ], // Customize colors
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 9
+            }]
+        },
+        options: {
+            layout: {
+              padding: {
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 50
+              }
+            },
+            cutout: '75%',
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false,
+                    position: 'top',
+                    labels: {
+                        color: '#333333',
+                        font: {
+                            size: 14,
+                        },
+                        padding: 0,
+                    }
+                },
+                datalabels: {
+                    formatter: (value, context) => {
+                        const label = context.chart.data.labels[context.dataIndex];
+                        const percentage = ((value / totalAmount) * 100).toFixed(2) + '%';
+                        return `${label}: ${percentage}`;
+                    },
+                    color: '#000',
+                    font: {
+                        weight: 'bold',
+                        size: 12,
+                    },
+                    align: 'end',
+                    anchor: 'end',
+                    offset: 10,
+                    padding: {
+                        top: -20
+                    },
+                }
+            }
+        },
+        plugins: [ChartDataLabels, {
+            id: 'maxValuePlugin',
+            beforeDraw: function(chart) {
+                var ctx = chart.ctx;
+                var width = chart.width;
+                var height = chart.height;
+                var fontSize = (height / 200).toFixed(2);
+                ctx.restore();
+                ctx.font = fontSize + "em sans-serif";
+                ctx.textBaseline = "middle";
+
+                var text = "$" + totalAmount.toString();
+                var textX = Math.round((width - ctx.measureText(text).width) / 2);
+                var textY = height / 2;
+
+                ctx.fillText(text, textX, textY);
+                ctx.save();
+            }
+        }]
+    });
+}
+
+// DIVIDEND INCOME CHART -- END
+
+
+
+  function handelDividendBYPeriod(data){
+    dividend_data_by_time = data
+    
+    populateYearSelect(data, 'yearSelect')
+    populateYearSelect(data, 'yearSelect_bottom', new Date().getFullYear())
+
+    // put this funcation at last becuase it read default val of select tag 
+    // (put after populateYearSelect(data, 'yearSelect_bottom', new Date().getFullYear()))
+    buildDividendData(data, null)
+    updateChart(data, document.getElementById('yearSelect').value);
+  }
+    async function fetchData(url) {
+    try {
+      const response = await fetch(url, {
+        method: "GET", // or 'PUT'
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      console.log("portfolio management:", result);
+      // dividend_information(result)
+      // displayTotalDividend(result)
+      dividendIncomeChart(result.dividend_income, result.total_dividend_received)
+      handelDividendBYPeriod(result.time_period)
+      // dividendByStocks(result)
+      return result
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }
+  const portfolioManagement = "protfolio-management/"
+  fetchData(portfolioManagement)
 </script>
 {% endblock body %}

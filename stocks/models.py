@@ -23,6 +23,7 @@ class Stock(models.Model):
     currency = models.CharField(choices = CURRENCYS, max_length = 5, default="CAD")
 
     pay_period_choices = [
+        ('weekly', 'Weekly'),
         ('monthly', 'Monthly'),
         ('quarterly', 'Quarterly'),
     ]
@@ -33,7 +34,7 @@ class Stock(models.Model):
     stock_yield = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    x_dividend_date = models.DateField(null=True, blank=True)
+    # x_dividend_date = models.DateField(null=True, blank=True)
     paid_period = models.CharField(
         max_length=10, choices=pay_period_choices, default="monthly"
     )
@@ -60,4 +61,13 @@ class Stock(models.Model):
         # You can use a library like requests or urllib to make the API call
         self.price = price
         self.save()
+
+class Xdividend(models.Model):
+    x_dividend_date = models.DateField(null=True, blank=True)
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+
+    # add a restriction so that i cann't add another x dividend
+    # date for same month
+    def __str__(self) -> str:
+        return str(self.x_dividend_date)
 

@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.contrib.auth.models import User
 from django.conf import settings
 import decimal
@@ -12,10 +14,12 @@ from portfolio.models import Portfolio
     
 class PortfolioItemManager(models.Manager):
     def submit_transaction(self, portfolio, stock, quantity, price, transaction_type, user):
-
         try:
             portfolio_item = self.get(stock = stock, portfolio = portfolio)
             if portfolio_item:
+                if transaction_type == 'DR':
+                    portfolio_item.total_dividend_paied += price
+
                 if transaction_type == 'BY' or transaction_type == 'DR':
                     prev_total = portfolio_item.purchase_price * decimal.Decimal(portfolio_item.quantity)
                     current_total = price * decimal.Decimal(quantity)
@@ -39,6 +43,7 @@ class PortfolioItemManager(models.Manager):
                 portfolio=portfolio, stock=stock, quantity=quantity,
                 purchase_price=price, user = user
             )
+
 
     def get_total_holding_amount(self, portfolio):
         total_holding_amount = 0
@@ -65,15 +70,61 @@ class PortfolioItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
+
     quantity = models.FloatField()
     purchase_price = models.DecimalField(max_digits=10, decimal_places=4)
     purchase_date = models.DateField(auto_now_add=True)
     current_price = models.DecimalField(max_digits=10, decimal_places=4, null=True, blank=True)
     currency = models.CharField(choices = CURRENCYS, max_length = 5, default="CAD")
+    
+    total_dividend_paied = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, default=decimal.Decimal(0.0))
+    commission = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     objects = PortfolioItemManager()
 
     def __str__(self) -> str:
         return self.stock.symbol + ", Portfolio: " + self.portfolio.account_type
+    
+    def total_return_percentage(self):
+        if not self.current_price or self.quantity <= 0:
+            return 0
+
+        # Adjust dividend based on currency
+        dividend = self.total_dividend_paied or decimal.Decimal(0.0)  # Avoid None issues
+        if self.currency == 'USD':
+            dividend *= decimal.Decimal(settings.CAD_TO_USD)
+
+        # Net purchase price for the entire position
+        total_purchase_price = self.purchase_price * decimal.Decimal(self.quantity)
+
+        # Net current value for the entire position
+        total_current_value = self.current_price * decimal.Decimal(self.quantity)
+
+        # Calculate total return: 
+        # ((Current Value + Total Dividend) - Total Purchase Price) / Total Purchase Price
+        if total_purchase_price > 0:
+            val = (total_current_value + dividend - total_purchase_price) / total_purchase_price
+        else:
+            val = 0  # Handle case where purchase price is zero to avoid division by zero
+
+        return round(val * 100, 2)  # Return as percentage
+
+    def total_return_amount(self):
+        if not self.current_price or self.quantity <= 0:
+            return 0
+
+        # Adjust dividend based on currency
+        dividend = self.total_dividend_paied or decimal.Decimal(0.0)
+        if self.currency == 'USD':
+            dividend *= decimal.Decimal(settings.CAD_TO_USD)
+
+        # Net purchase price for the entire position
+        total_purchase_price = self.purchase_price * decimal.Decimal(self.quantity)
+
+        # Net current value for the entire position
+        total_current_value = self.current_price * decimal.Decimal(self.quantity)
+
+        total_return_amount = (total_current_value + dividend) - total_purchase_price
+        return round(total_return_amount, 2)
     
     def DRIP_table(self):
         # ROws
@@ -258,17 +309,18 @@ class PortfolioItem(models.Model):
         dividend = self.stock.distribution_per_share
         pay_period = self.stock.paid_period
 
-        if  dividend and pay_period:
-            value = 0
-            if pay_period == "monthly":
-                value = dividend * 12
-            else:
-                value = dividend * 4
-            
-            return {'data': value}
-            
-        else:
+        if not (dividend and pay_period):
             return {"no_data": "Not enough data to show."}
+        value = 0
+        if pay_period == "monthly":
+            value = dividend * 12
+        elif pay_period == "weekly":
+            value = dividend * decimal.Decimal(52.1429)
+        else:
+            value = dividend * 4
+        
+        return {'data': value}
+            
 
     def purch_price(self):
         return round(self.purchase_price, 2)
@@ -308,8 +360,19 @@ class PortfolioItem(models.Model):
             return round(self.current_price * decimal.Decimal(self.quantity), 2)
         return round(self.purchase_price * decimal.Decimal(self.quantity), 2)
     
+    def amount_invested(self):
+        return round(self.purchase_price * decimal.Decimal(self.quantity), 2)
+    
     def dividend_earning(self):
         if not self.stock.distribution_per_share:
             return None
-        return decimal.Decimal(self.quantity) * self.stock.distribution_per_share 
+        return decimal.Decimal(self.quantity) * self.stock.distribution_per_share
+    
 
+@receiver(post_save, sender=PortfolioItem)
+def update_commission(sender, instance, **kwargs):
+    if instance.pk:
+        old_currency = PortfolioItem.objects.filter(pk=instance.pk).values('currency').first().get('currency')
+        if old_currency != instance.currency:
+            if instance.currency == 'USD':
+                instance.commission = decimal.Decimal(0.15)

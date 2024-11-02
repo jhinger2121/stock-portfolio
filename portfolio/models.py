@@ -8,7 +8,8 @@ from django.utils.text import slugify
 from django.db.models.signals import pre_save
 import datetime
 
-from main.utils import find_dividend_reveived_monthly
+from dividend_goal.models import DividendGoal
+from main.utils import find_dividend_received_monthly
 # from transaction.models import Transaction
 # from portfolioitem.models import PortfolioItem
 
@@ -16,6 +17,7 @@ class Portfolio(models.Model):
     name = models.CharField(max_length=255) #broker name (ex. Wealthsimple)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
+    total_deposited = models.IntegerField(default=0, blank=True, null=True)
     # account = models.ForeignKey(Account, on_delete=models.CASCADE)
     slug = models.SlugField(max_length=255)
     account_type_choices = [
@@ -23,6 +25,7 @@ class Portfolio(models.Model):
         ('tax_free', 'Tax-Free'),
         ('non_registered', 'Non-Registered'),
         ('FHSA', 'First Home Saving Account'),
+        ('RRSP', 'Retirement Account'),
         ('unknown', 'Unknown')
     ]
     account_type = models.CharField(max_length=15, choices=account_type_choices)
@@ -35,7 +38,7 @@ class Portfolio(models.Model):
         transcations = self.transaction_set.filter(
             user = user, portfolio = self, transaction_type = "DR")
         
-        data = find_dividend_reveived_monthly(transcations)
+        data = find_dividend_received_monthly(transcations)
         return data
         
 
@@ -98,29 +101,6 @@ class Portfolio(models.Model):
         # get Transaction related to stock (td.to)
         # calculate drft for that stock
         # in order to calculate DRIP must pay attenation to pay_period
-
-    def annual_dividend(self):
-        # items = PortfolioItem.objects.filter(portfolio = self)
-        items = self.portfolioitem_set.all()
-        total = 0
-        total_yeild = 0
-        msg = []
-        for item in items:
-            if item.stock.stock_yield:
-                total_yeild += item.stock.stock_yield
-
-            value = item.annual_dividend_earning()
-            if "no_data" in value:
-                msg.append(f"Missing some data for '{item.stock.symbol}' in '{self.name}'")
-            else:
-                total += value['data']
-        monthly = total / 12
-        weekly = total / 52
-        return {
-            "msg": msg, "yearly": locale.currency(total), 
-            "monthly": locale.currency(monthly), "weekly": locale.currency(weekly),
-            "yield": total_yeild,
-        }
 
     def holding_amount(self):
         total = 0
